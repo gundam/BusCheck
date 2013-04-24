@@ -1,0 +1,17 @@
+<?php 
+$con=mysql_connect('localhost','root','861120');
+  if (!$con) {
+  	echo "failed";
+  }else{
+
+  	echo "success";
+  }
+  mysql_select_db('NJGJCX');
+  $x=$_REQUEST['x'];
+  $y=$_REQUEST['y'];
+
+
+  mysql_query("insert into gps_test (x,y) values ($x,$y)");
+
+
+ ?>

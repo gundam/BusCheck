@@ -1,0 +1,7 @@
+ 
+        <service android:name=".MainSerivce" android:enabled="true">
+            <intent-filter >
+                <action android:name="com.example.buscheck"></action>
+                
+            </intent-filter>
+        </service>

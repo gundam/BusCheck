@@ -1,0 +1,63 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta name="viewport" content="initial-scale=1.0">
+  <!-- <meta name="viewport" content="initial-scale=1.0,user-scalable=no"> -->
+  <title></title>
+  <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+   <script src="http://api.map.baidu.com/api?v1.5&ak=CAf080ba640d25dc08d4940e43f54f73"></script>
+	<style>
+	html{height: 100%}
+	body{height: 100%;margin: 0px;padding: 0px}
+	#container{height: 100%}
+  #r-result{height:100%;width:20%;float:left;}
+	</style>
+</head>
+<body>
+
+	<div id="container">
+		
+	</div>
+
+
+
+  <script type="text/javascript">
+var map = new BMap.Map("container");            // 创建Map实例
+map.centerAndZoom(new BMap.Point(118.92634674, 32.11014338), 20);
+map.enableScrollWheelZoom();
+map.addControl(new BMap.NavigationControl());
+try{
+map.addControl(new BMap.GeolocationControl());
+}catch(error){
+
+}
+
+map.addControl(new BMap.OverviewMapControl());
+map.addControl(new BMap.ScaleControl());
+map.addControl(new BMap.MapTypeControl());
+map.addControl(new BMap.CopyrightControl());
+
+var busline = new BMap.BusLineSearch(map,{
+    renderOptions:{map:map,panel:"r-result"},
+        onGetBusListComplete: function(result){
+           if(result) {
+            console.log(result);
+            // console.log(result.getBusList);
+             var fstLine = result.getBusListItem(0);//获取第一个公交列表显示到map上
+             busline.getBusLine(fstLine);
+           }
+        }
+});
+function busSearch(){
+    var busName = "97";
+    busline.getBusList(busName);
+}
+
+setTimeout(function(){
+    busSearch();
+},1500);
+</script>
+
+</body>
+</html>

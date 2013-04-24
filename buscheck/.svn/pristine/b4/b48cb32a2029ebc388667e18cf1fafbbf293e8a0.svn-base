@@ -1,0 +1,17 @@
+<?php 
+$con=mysql_connect('localhost','root','861120');
+  if (!$con) {
+  	echo "failed";
+  }else{
+
+  	echo "success";
+  }
+  mysql_select_db('NJGJCX');
+  $ID=$_REQUEST['ID'];
+  
+
+
+  mysql_query("insert into njgjcx_user (njgjcx_user_wxId) values ('123asdasdasdsad')");
+
+
+ ?>

@@ -1,0 +1,395 @@
+<?php
+/**
+  * wechat php test
+  */
+// require ("./log/log.php");
+require './common/Db.php';
+define("TOKEN", "weixin");
+
+
+xhprof_enable();
+//ahsfuoaifha
+
+$wechatObj = new wechatCallbackapiTest();
+// $wechatObj->valid();
+$wechatObj->getInfo();
+$wechatObj->responseMsg();
+
+class wechatCallbackapiTest
+{
+
+    private $toUserName;     //消息接收者微信id
+    private $fromUserName;   //消息发送者id
+    private $msgType;        //发送类型
+    private $recContent;     //接收的内容
+    private $sendContent;    //发送的内容
+    private $funcFlag;       //星标
+
+    //地图
+    //
+    private $location_x;     //纬度
+    private $location_y;      //经度
+    private $scale;          //缩略大小
+    private $label;          //地理位置信息
+
+
+    //图片消息
+    //
+    private $picUrl;         //图片链接
+
+
+    private $log;           //log
+    private $Db;            //数据库
+    private $memcache;
+    private $XTemp;
+    private $LTemp;
+
+
+
+
+    public  function getInfo()
+    {
+        $this->memcache = new Memcache;
+        $this->memcache->connect("202.119.236.249", 12000);
+        // $memcache->set('key', 'This is a test!', 0, 60);
+        // $val = $memcache->get('key');
+        // echo $val;
+        //连接memcache
+        $this->Db=new DB();
+         $this->log =new log();
+        $postStr = $GLOBALS["HTTP_RAW_POST_DATA"];
+
+        if (!empty($postStr)) {
+
+            # code...
+            
+                $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+                $this->fromUserName=  $postObj->FromUserName;
+                
+                 $getId=$this->memcache->get("userId".$this->fromUserName);
+                if ($getId==False) {
+                $this->memcache->set("userId".$this->fromUserName,"$postObj->FromUserName",0,600); 
+                }
+
+
+                $this->toUserName  =  $postObj->ToUserName;
+                $this->msgType  =  $postObj->MsgType;
+                switch ($postObj->MsgType) {
+                    case 'text':
+                        # code...
+                        $this->XTemp=$this->memcache->get("userId".$this->fromUserName.'X');
+                        $this->LTemp=$this->memcache->get("userId".$this->fromUserName.'Y');
+                        if ($this->XTemp==false&&$this->LTemp==false) {
+                            $this->XTemp='';
+                            $this->LTemp='';
+                        }
+                        $this->recContent= $postObj->Content;//收到的消息
+                        
+                        break;
+                    case 'location':
+                        # code...
+                        $this->location_x =   $postObj->Location_X;
+                        $this->location_y =   $postObj->Location_Y;
+                        $this->scale      =   $postObj->Scale;
+                        $this->label      =   $postObj->Label;
+                        $this->XTemp=$this->memcache->get("userId".$this->fromUserName.'X');
+                        $this->LTemp=$this->memcache->get("userId".$this->fromUserName.'Y');
+                        if ($this->XTemp==false&&$this->LTemp==false) {
+                        $this->memcache->set("userId".$this->fromUserName.'X',"$this->location_x",0,600);
+                        $this->XTemp=$this->memcache->get("userId".$this->fromUserName.'X');
+                        $this->memcache->set("userId".$this->fromUserName.'Y',"$this->location_y",0,600);
+                        $this->LTemp=$this->memcache->get("userId".$this->fromUserName.'Y');
+
+                        }
+                        
+                        break;
+                    case 'image':
+                        # code...
+                        $this->picUrl     =   $postObj->PicUrl;
+                        break;
+                    
+                    default:
+                        # code...
+                        break;
+                }
+
+                
+        }
+
+    }
+
+    public function responseMsg()
+    {
+       //检查用户
+       
+
+        $ab=$this->splitStr($this->recContent);
+        
+        //回复
+        switch ($this->msgType) {
+            case 'text':
+                
+                 switch ($this->recContent) {
+                                 case '注册':
+                                    $string="成功记录，你可以发送任意信息获得你需要的信息";
+                                     echo $this->sendMsg($string,time(),0);
+                                     break;
+                                 case '13':
+                                      $str='13路路线是 南京车站(火车站西广场) - 中央门东站 - 金桥市场 - 城河村(南) - 钟阜路 - 新门口 - 福建路 - 三牌楼大街 - 三牌楼[东] - 虹桥(新模范马路) - 山西路(西流湾公园) - 山西路(南) - 大方巷 - 云南路(上海路) - 五台山北站 - 五台山 - 莫愁路(地铁上海路站) - 汉中门 - 莫愁湖东路北站 - 莫愁湖东路南站 - 莫愁湖公园 - 大士茶亭(东) - 南湖(总站) (23站)';
+                                     echo $this->sendMsg($str,time(),0);
+                                     break;
+                                 case '13路':
+                                     $str='13路路线是 南京车站(火车站西广场) - 中央门东站 - 金桥市场 - 城河村(南) - 钟阜路 - 新门口 - 福建路 - 三牌楼大街 - 三牌楼[东] - 虹桥(新模范马路) - 山西路(西流湾公园) - 山西路(南) - 大方巷 - 云南路(上海路) - 五台山北站 - 五台山 - 莫愁路(地铁上海路站) - 汉中门 - 莫愁湖东路北站 - 莫愁湖东路南站 - 莫愁湖公园 - 大士茶亭(东) - 南湖(总站) (23站)';
+                                     echo $this->sendMsg($str,time(),0);
+                                     break;
+                                case '97':
+                                    // $str='97路路线仙林中心站(上客站) - 学典路 - 外国语学校 - 中医药大学[仙林] - 杉湖东路 - 南京邮电大学[仙林] - 财经大学[仙林] - 文苑路 - 亚东新城区 - 文苑路西站 - 仙隐北路 - 雁鸣山庄 - 亚东花园城 - 尧胜村 - 徐庄软件园 - 东杨坊 - 岔路口 - 王家湾 - 伊刘屯 - 樱铁村 - 长途东站(北) - 新庄广场东 - 火车站广场东 - 南京车站(火车站东广场) (24站)';
+
+
+                                    $queryStr="select * from njgjcx_busInfo where No='97'";
+                                    $result=$this->Db->query($queryStr);
+                                    $row=mysql_fetch_array($result);
+                                    // $row['Lon'] //纬度
+                                    // $row['Lan']  //经度
+                                    // $row['Time']//时间
+                                    // $row['LocationTemp']//当前地点
+                                    // $row['NextLocationTemp']//下一站
+                                    // $this->getDistance($)
+                                    
+                                     $distance=$this->getDistance($this->XTemp,$this->LTemp,$row['Lon'],$row['Lat']);
+                                    $str=$this->XTemp.' '.$this->LTemp.'  '.'97路在'.$row['Time'].'的时候在纬度'.$row['Lon'].'经度'.$row['Lan'].'当前地点'.$row['LocationTemp'].'下一站'.$row['NextLocationTemp'];
+
+                                    echo $this->sendMsg($distance,time(),0);
+                                    break;
+                                case '97路':
+                                    $str=' 97路路线仙林中心站(上客站) - 学典路 - 外国语学校 - 中医药大学[仙林] - 杉湖东路 - 南京邮电大学[仙林] - 财经大学[仙林] - 文苑路 - 亚东新城区 - 文苑路西站 - 仙隐北路 - 雁鸣山庄 - 亚东花园城 - 尧胜村 - 徐庄软件园 - 东杨坊 - 岔路口 - 王家湾 - 伊刘屯 - 樱铁村 - 长途东站(北) - 新庄广场东 - 火车站广场东 - 南京车站(火车站东广场) (24站)';
+                                    echo $this->sendMsg($str,time(),0);
+                                    break;
+                                case '新门口':
+                                   $str="13路，距离本站还有500米；42路距离本站还有300米，72路距离本站还有1000米";
+                                   echo $this->sendMsg($str,time(),0);
+                                    break;
+                                 case '新门口站':
+                                   $str="13路，距离本站还有500米；42路距离本站还有300米，72路距离本站还有1000米";
+                                   echo $this->sendMsg($str,time(),0);
+                                    break;
+                                 default:
+                                    $val=$this->memcache->get('userId'.$this->fromUserName);
+                                    $this->log->addLog('memcache获取userid的值为'.$val);
+;                                     $str="欢迎您使用南京公交查询，您可以："."\n"
+                                        ."发送位置信息."."\n"
+                                        ."发送车站名称（比如“新门口站”)."."\n"
+                                        ."发送公交车号（比如“13路”)."."\n"
+                                        ."还可向公交公司吐槽，谢谢您的关注！".$val;
+                                     echo $this->sendMsg($str,time(),1);
+                                    break;
+                             }            
+                break;
+            case 'location':
+                // $a=microtime(true);
+                // $imageUrl="http://202.119.236.249/buscheck/images/";
+                // $b=microtime(true)-$a;
+                //     $this->log->addLog($imageUrl.'D1.jpg');
+                // $key1 = array(
+                //                         0=>array('title'=>'你在三牌楼站，经过的公交车信息是','description'=>'点击详细asdasdsaafasffa','picUrl'=>'','url'=>''),
+
+                //     1=>array('title'=>'D1路，最近的距离400米','description'=>'点击详细asdasdsaafasffa','picUrl'=>$imageUrl.'D1.1.jpg','url'=>$imageUrl.'D1.1.jpg'),
+                //              2=>array('title'=>'45路，5公里范围内没有','description'=>'点击详细','picUrl'=>$imageUrl.'45.1.jpg','url'=>$imageUrl.'45.1.jpg'),
+                //             3=>array('title'=>'83路，5公里范围内没有','description'=>'点击详细','picUrl'=>$imageUrl.'83.1.jpg','url'=>$imageUrl.'83.1.jpg'),                                
+                //             4=>array('title'=>'13路，最近的距离700米','description'=>'点击详细','picUrl'=>$imageUrl.'13.1.jpg','url'=>$imageUrl.'13.1.jpg'),                                
+
+                //         );
+                // $key2 = array(
+                //                         0=>array('title'=>'你在新门口站，经过的公交车信息是','description'=>'点击详细asdasdsaafasffa','picUrl'=>'','url'=>''),
+
+                //                         1=>array('title'=>'13路,最近的距离600米','description'=>'点击详细shgshfdhdjdgjgjjtjtj','picUrl'=>$imageUrl.'13.1.jpg','url'=>$imageUrl.'13.1.jpg'),
+                //              2=>array('title'=>'42路，最近的距离200米','description'=>'点击详细','picUrl'=>$imageUrl.'42.1.jpg','url'=>$imageUrl.'42.1.jpg'),
+                //             3=>array('title'=>'143路，最近的距离1500米','description'=>'点击详细','picUrl'=>$imageUrl.'143.1.jpg','url'=>$imageUrl.'143.1.jpg'),                                
+
+                //         );
+                // switch (rand(0,1)) {
+                //     case 0:
+                //         echo $this->sendNews($key1);
+                //         break;
+
+                //     case 1:
+                //         echo $this->sendNews($key2);
+                //        break;
+                //     default:
+                //         # code...
+                //         break;
+                // }
+
+                
+                // $string='你最近的公交站有'."\n"
+                //     .'南京车站http://202.119.236.249/buscheck/bus/detail.php'."\n"
+                //     .'火车广场东'.$shortUrl."\n"
+                //     .'新庄广场东'.$shortUrl."\n"
+                //     .'长途东站'.$shortUrl."\n\n"
+                //     .'部分公交车有'."\n"
+                //     .'97路'.$shortUrl."\n"
+                //     .'92路'.$shortUrl.
+
+                //     '你可以点击链接查看具体信息';
+                // echo $this->sendMsg($string,time());
+                // break;
+                 
+                // $str=$this->memcache->get("userId".$this->fromUserName);
+                $str = $this->XTemp.$this->LTemp;
+                echo $this->sendMsg($str,time(),1);
+                break;
+            default:
+                # code...
+                break;
+        }
+
+
+        
+        
+                
+        
+    }
+
+
+    private function checkUser()
+    {
+            $this->Db=new Db();
+            $result=    $this->Db->query("select * from njgjcx_user where njgjcx_user_wxId ='".$this->fromUserName."'");
+            $row=mysql_num_rows($result);
+
+            if($row !=1){
+
+            echo $this->sendMsg("你好，你可以注册你常用的公交车站和公交车\n格式是 注册+(车站名)+(公交车号)",time(),0);
+                $dataArray = array('njgjcx_user_wxId' =>$this->fromUserName );
+
+                $this->Db->insert("njgjcx_user",$dataArray);
+                exit();
+            }
+
+
+    }
+
+    private function sendMsg($contentStr,$time,$flag)
+    {
+        // $time = time();
+       $textTpl = "<xml>
+                            <ToUserName><![CDATA[%s]]></ToUserName>
+                            <FromUserName><![CDATA[%s]]></FromUserName>
+                            <CreateTime>%s</CreateTime>
+                            <MsgType><![CDATA[%s]]></MsgType>
+                            <Content><![CDATA[%s]]></Content>
+                            <FuncFlag>%s</FuncFlag>
+                            </xml>";
+        $resultStr = sprintf($textTpl, $this->fromUserName, $this->toUserName, $time, 'text', $contentStr,$flag);
+        // $resultStr2 = sprintf($textTpl, $this->fromUserName, $this->toUserName, , 'text', $contentStr);
+        
+        return $resultStr;  
+
+    }
+
+    public function sendNews($data)
+    {   $time=time();
+        $textTpl = " <xml>
+ <ToUserName><![CDATA[%s]]></ToUserName>
+ <FromUserName><![CDATA[%s]]></FromUserName>
+ <CreateTime><![CDATA[%s]]></CreateTime>
+ <MsgType><![CDATA[news]]></MsgType>
+ <Content><![CDATA[]]></Content>
+ <ArticleCount><![CDATA[%s]]></ArticleCount>
+ <Articles>";
+
+    foreach ($data as $key1 => $value1) {
+      // foreach ($value1 as $key2 => $value2) {
+          $textTpl .="<item>
+        <Title>".$value1['title']."</Title>
+        <Description>".$value1['description']."</Description>
+            <PicUrl>".$value1['picUrl']."</PicUrl>
+         <Url>".$value1['url']."</Url>
+     </item>";
+       // $this->log->addLog($textTpl);
+      // }
+    }
+    $textTpl .="</Articles>
+  <FuncFlag>1</FuncFlag>
+  </xml> ";
+
+        $this->log->addLog($textTpl);
+ 
+
+        $resultStr = sprintf($textTpl, $this->fromUserName, $this->toUserName, time(), count($data));
+        return $resultStr.$resultStr;  
+    }
+
+
+    public function shortUrl($url)
+            {
+                $this->log->addLog($url);
+            $ch=curl_init();
+            curl_setopt($ch,CURLOPT_URL,"http://dwz.cn/create.php");
+            curl_setopt($ch,CURLOPT_POST,true);
+            curl_setopt($ch,CURLOPT_RETURNTRANSFER,true);
+            $data=array('url'=>$url);
+            curl_setopt($ch,CURLOPT_POSTFIELDS,$data);
+            $strRes=curl_exec($ch);
+            curl_close($ch);
+            $arrResponse=json_decode($strRes,true);
+            if($arrResponse['status']==0)
+            {
+            /**错误处理*/
+            echo iconv('UTF-8','GBK',$arrResponse['err_msg'])."\n";
+            }
+            /** tinyurl */
+                return $arrResponse['tinyurl']."\n";   # code...
+            }	
+
+      public function splitStr($str)
+            {
+
+                    $orderDataArray= explode('+', substr($str, 0));
+                    return $orderDataArray;
+
+            } 
+
+    public function getClientIp()
+  {
+    $this->log->addLog('HTTP_REFERER'.$_SERVER['HTTP_REFERER']);
+    $this->log->addLog('PHP_SELF'.$_SERVER['PHP_SELF']);
+    $this->log->addLog('argv '.$_SERVER['argv']);
+    $this->log->addLog('SERVER_ADDR'.$_SERVER['SERVER_ADDR']);
+    $this->log->addLog('SERVER_NAME'.$_SERVER['SERVER_NAME']);
+    $this->log->addLog('SERVER_SOFTWARE'.$_SERVER['SERVER_SOFTWARE']);
+    $this->log->addLog('REQUEST_METHOD'.$_SERVER['REQUEST_METHOD']);
+    $this->log->addLog('HTTP_ACCEPT'.$_SERVER['HTTP_ACCEPT']);
+    $this->log->addLog('HTTP_HOST'.$_SERVER['HTTP_HOST']);
+    $this->log->addLog('HTTP_USER_AGENT'.$_SERVER['HTTP_USER_AGENT']);
+    $this->log->addLog('REMOTE_ADDR'.$_SERVER['REMOTE_ADDR']);
+    $this->log->addLog('REMOTE_HOST'.$_SERVER['REMOTE_HOST']);
+    $this->log->addLog('HTTP_REFERER'.$_SERVER['HTTP_REFERER']);
+
+      $ip=$_SERVER['REMOTE_ADDR'];
+    return $ip;
+  }
+
+  public function getDistance($lat1,$lng1,$lat2,$lng2)
+  {
+       $EARTH_RADIUS =6378.137;
+      $radLat1 =$this->rad($lat1);
+      $radLat2 =$this->rad($lat2);
+      $a=$radLat1-$radLat2;
+      $b=$this->rad($lng1)-$this->rad($lng2);
+      $s=2*Math.asin(Math.sqrt(Math.pow(Math.sin($a/2), 2)+Math.cos($radLat1)*Math.cos($radLat2)*Math.pow(Math.sin($b/2), 2)));
+      $s=$s*$EARTH_RADIUS;
+      $s=Math.round($s*10000)/10000;
+      return $s;
+  }
+
+  private function rad($d)
+  {
+      return $d*Math.pi()/180.0;
+  }
+      
+
+	
+}
+
+?>

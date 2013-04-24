@@ -1,0 +1,22 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+  <meta name="viewport" content="initial-scale=1.0,user-scalable=no">
+  <title></title>
+  <script src="http://code.jquery.com/jquery-1.7.2.min.js"></script>
+   <script src="http://api.map.baidu.com/api?v1.5&ak=CAf080ba640d25dc08d4940e43f54f73"></script>
+	
+</head>
+<body>
+
+	<div id="container">
+		
+	</div>
+  <script>
+  var map=new BMap.Map("container");
+  var point=new BMap.Point(116.404,39.915);
+  map.centerAndZoom(point,15);
+  </script>
+</body>
+</html>
